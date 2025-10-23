@@ -44,22 +44,34 @@ Create a `autocamlight.toml` file in one of the following locations:
 2. $XDG_CONFIG_DIRS (or /etc/xdg if unset), read as a list of folder split by :, as per the XDG specification, or
 3. the current working directory.
 
-Only a single toml file is loaded.
+The files are read in the order they are listed, so you can override settings. But only top level keys can be overridden in their entirety, no table merging is performed.
 
-Example configuration:
+Example configuration with some comments:
 
 ```toml
+# Log level, one of: CRITICAL, ERROR, WARNING, INFO, DEBUG
 log_level = "DEBUG"
 
+# Time to wait for inotify events, in seconds.
+# Longer times will reduce CPU usage, but will increase the delay and jitter of the state updates.
+inotify_block_duration = 0.1
+
+# Time to wait after before sending the state update, in seconds.
+# If another event is received before this time, the timer is reset.
+debounce_duration = 0.5
+
+# MQTT settings from https://github.com/unixorn/ha-mqtt-discoverable
 [mqtt]
 host = "homeassistant.local"
 username = "mqtt"
 password = "Correct Horse Battery Staple"
 
+# Entity settings from https://github.com/unixorn/ha-mqtt-discoverable
 [entity]
 name = "Webcam"
 unique_id = "fe4bd497-7c2f-4f35-899f-f147f9f84738-capturing"
 
+# Device settings from https://github.com/unixorn/ha-mqtt-discoverable
 [entity.device]
 name = "Webcam"
 identifiers = "fe4bd497-7c2f-4f35-899f-f147f9f84738"
