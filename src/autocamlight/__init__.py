@@ -8,7 +8,7 @@ from typing import Literal
 from ha_mqtt_discoverable import Settings
 from ha_mqtt_discoverable.sensors import BinarySensor, BinarySensorInfo
 from inotify.adapters import Inotify
-from inotify.constants import IN_CLOSE, IN_OPEN
+from inotify.constants import IN_CLOSE_WRITE, IN_OPEN
 from pydantic import ValidationError
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
 
@@ -63,11 +63,13 @@ class AutoCamLight:
         self.sensor = BinarySensor(Settings(mqtt=cfg.mqtt, entity=cfg.entity, manual_availability=True))
 
     def run(self):
+        logger = logging.getLogger("autocamlight")
+
         try:
             self.sensor.set_availability(True)
             inotify = Inotify()
 
-            inotify.add_watch("/dev", mask=IN_OPEN | IN_CLOSE)
+            inotify.add_watch("/dev", mask=IN_OPEN | IN_CLOSE_WRITE)
 
             debounce = Timer(0, lambda: None)
 
@@ -75,8 +77,12 @@ class AutoCamLight:
                 if not filename.startswith("video"):
                     continue
 
+                state = bool(header.mask & IN_OPEN)
+
+                logger.debug("Received event: device: %s, state %s", filename, state)
+
                 debounce.cancel()
-                debounce = Timer(0.1, self.set_state, (bool(header.mask & IN_OPEN),))
+                debounce = Timer(0.1, self.set_state, (state,))
                 debounce.start()
         except KeyboardInterrupt:
             pass
@@ -98,7 +104,7 @@ class AutoCamLight:
         if state == self._state:
             return
         self._state = state
-
+        self.sensor.set_availability(True)
         self.sensor.update_state(state)
 
 
@@ -108,6 +114,9 @@ def main():
     cfg = Config.load()
 
     logging.basicConfig(level=cfg.log_level, format="%(asctime)s %(levelname)5s [%(name)s] %(message)s")
+    if cfg.log_level == "DEBUG":
+        # Too much noise from inotify, since it's not filtered by file name yet
+        logging.getLogger("inotify.adapters").setLevel(logging.INFO)
     logger = logging.getLogger("autocamlight")
     logger.info(LOGO)
     logger.info("Loaded config:\n%s", cfg.model_dump_json(indent=2, exclude_defaults=True))
