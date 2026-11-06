@@ -30,8 +30,8 @@ LOGO = rf"""
 ╠═══╣╖  ╓╠═╛╔══╗║    ╒══╗╔═╦═╗║    ╖╔══╗╠══╗╠═╛
 ║   ║║  ║║  ║  ║║    ╔══╣║ ║ ║║    ║║  ║║  ║║
 ╜   ╙╚══╝╚═╛╚══╝╚═══╛╚══╝╜ ╙ ╙╚═══╛╙╚══╣╜  ╙╚═╛
-© 2025 Dries007 - MIT License       ╓  ║
-v{__version__:<17}                  ╚══╝
+© 2025-2026 Dries007 - MIT License  ╓  ║
+v{__version__:<33}  ╚══╝
 """
 
 
@@ -188,7 +188,10 @@ class AutoCamLight:
             return
         self._state = state
         self.sensor.set_availability(True)
-        self.sensor.update_state(state)
+        if state:
+            self.sensor.on()
+        else:
+            self.sensor.off()
 
 
 def main():

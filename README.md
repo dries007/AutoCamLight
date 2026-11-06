@@ -15,7 +15,8 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![GitHub issues](https://img.shields.io/github/issues/Dries007/AutoCamLight)](https://github.com/Dries007/AutoCamLight/issues)
 [![GitHub stars](https://img.shields.io/github/stars/Dries007/AutoCamLight)](https://github.com/Dries007/AutoCamLight/stargazers)
-[![Last Commit](https://img.shields.io/github/last-commit/Dries007/AutoCamLight)](https://github.com/Dries007/AutoCamLight/commits/main)[![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/Dries007)
+[![Last Commit](https://img.shields.io/github/last-commit/Dries007/AutoCamLight)](https://github.com/Dries007/AutoCamLight/commits/main)
+[![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/Dries007)
 
 
 A small linux utility to automate your webcam light via Home Assistant.
@@ -30,10 +31,18 @@ After the first time the webcam is used, the device & entity will be created in 
 
 ### Install
 
+[The package is available on PyPI.](https://pypi.org/project/autocamlight)
+
 Use of [uv](https://docs.astral.sh/uv/) is highly recommended:
 
 ```shell
 uv tool install autocamlight
+```
+
+Update with:
+
+```uv
+uv tool update autocamlight
 ```
 
 ### Configure
@@ -101,6 +110,8 @@ ExecStart=/usr/bin/uv tool run autocamlight
 Restart=on-failure
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
+# Remove the next line to disable auto-updating the program.
+ExecStartPre=/usr/bin/uv tool upgrade autocamlight
 
 [Install]
 WantedBy=default.target
